@@ -1,0 +1,28 @@
+{
+  "name": "isms-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "create-admin": "node src/scripts/createAdmin.js",
+    "test": "node --test",
+    "lint": "eslint src tests"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.15.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.37.0",
+    "globals": "^16.4.0"
+  }
+}
