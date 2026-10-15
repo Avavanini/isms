@@ -1,0 +1,29 @@
+# Dependencies and build output
+node_modules/
+frontend/dist/
+backend/dist/
+coverage/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+
+# Database exports and local backups
+*.sql.gz
+*.dump
+*.bak
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
