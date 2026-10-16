@@ -2,8 +2,11 @@ import { createServer } from 'node:http';
 import app from './app.js';
 import { env } from './config/env.js';
 import { closeDatabasePool } from './repositories/healthRepository.js';
+import { setupWebSocketServer } from './websockets/socketServer.js';
 
 const server = createServer(app);
+setupWebSocketServer(server);
+
 let isShuttingDown = false;
 
 async function shutdown(signal) {
@@ -32,6 +35,7 @@ async function shutdown(signal) {
 
 server.listen(env.port, () => {
   console.info(`ISMS API listening on port ${env.port}`);
+  console.info(`ISMS WebSocket stream ready at ws://localhost:${env.port}/ws`);
 });
 
 process.on('SIGINT', () => void shutdown('SIGINT'));
