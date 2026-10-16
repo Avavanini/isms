@@ -99,3 +99,46 @@ are calculated in scaled integer thousandths in application code and stored in
 The existing item `minimum_stock_level` is item-wide and compared separately
 with each warehouse balance. Developer B can query `GET /api/stock/levels?low_stock=true`
 for reorder candidates; this does not create purchase orders.
+
+## Module 3: Procurement & Automated Reorder Alerting (Developer 2)
+
+### Automated Reorder Alerts
+- `GET /api/alerts/low-stock`: Returns list of items where `quantity <= minimum_stock_level` across warehouses, including calculated deficit, recommended reorder quantity, severity, and preferred vendor.
+- `POST /api/alerts/trigger-reorders`: Generates draft Purchase Orders automatically for all low-stock items.
+
+### Suppliers
+- `GET /api/suppliers?search=&is_active=`: Lists active/all registered vendors.
+- `GET /api/suppliers/:id`: Retrieves full supplier details.
+- `POST /api/suppliers`: Registers a vendor (`name`, `contact_name`, `email`, `phone`, `address`, `rating`).
+- `PATCH /api/suppliers/:id`: Updates vendor details or status.
+- `DELETE /api/suppliers/:id`: Soft-deactivates vendor.
+
+### Purchase Orders
+- `GET /api/purchase-orders?status=&supplier_id=&destination_warehouse_id=`: Lists purchase orders with status filtering.
+- `GET /api/purchase-orders/:id`: Retrieves PO and its line items.
+- `POST /api/purchase-orders`: Creates a PO with line items (`supplier_id`, `destination_warehouse_id`, `items: [{ item_id, quantity, unit_price }]`, optional `expected_delivery_date`, `notes`).
+- `POST /api/purchase-orders/:id/approve`: Transitions status from `DRAFT`/`PENDING_APPROVAL` to `ORDERED`.
+- `POST /api/purchase-orders/:id/receive`: Marks PO as `RECEIVED`, updates item stock levels in destination warehouse, and broadcasts `PO_RECEIVED` over WebSocket.
+- `POST /api/purchase-orders/:id/cancel`: Cancels PO.
+
+## Module 4: Inter-Warehouse Stock Transfers & Analytics (Developer 2)
+
+### Stock Transfers
+- `GET /api/transfers?status=&source_warehouse_id=&destination_warehouse_id=`: Lists inter-warehouse transfer requests.
+- `GET /api/transfers/:id`: Returns transfer details and line items.
+- `POST /api/transfers`: Initiates transfer request (`source_warehouse_id`, `destination_warehouse_id`, `items: [{ item_id, quantity }]`, `notes`). Rejects if source equals destination.
+- `POST /api/transfers/:id/approve`: Approves requested transfer.
+- `POST /api/transfers/:id/dispatch`: Sets status to `DISPATCHED`, deducts item quantities from source warehouse, and broadcasts `TRANSFER_DISPATCHED`.
+- `POST /api/transfers/:id/receive`: Sets status to `RECEIVED`, credits item quantities into destination warehouse, and broadcasts `TRANSFER_RECEIVED`.
+- `POST /api/transfers/:id/cancel`: Cancels transfer and restores source stock if previously dispatched.
+
+### Analytics & FSN Dashboard
+- `GET /api/analytics/metrics`: Returns executive KPIs: total inventory valuation, active PO value/count, in-transit transfers count, low-stock alerts, warehouse valuation breakdown, and category valuation split.
+- `GET /api/analytics/fsn`: Computes Fast/Slow/Non-Moving (FSN) item categorization based on consumption velocity and turnover ratio, with strategic action recommendations.
+- `GET /api/analytics/reports/stock-audit`: Returns structured stock audit data for multi-warehouse valuation.
+- `GET /api/analytics/reports/export-csv`: Streams downloadable `isms_stock_audit_report.csv` file.
+
+### WebSocket Live Stream
+- Endpoint: `ws://localhost:3000/ws`
+- Events broadcast: `PO_CREATED`, `PO_STATUS_CHANGED`, `PO_RECEIVED`, `TRANSFER_CREATED`, `TRANSFER_APPROVED`, `TRANSFER_DISPATCHED`, `TRANSFER_RECEIVED`, `REORDER_TRIGGERED`.
+
